@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.yandex.practicum.filmorate.controllers.FilmController;
 import ru.yandex.practicum.filmorate.models.Film;
 import ru.yandex.practicum.filmorate.testUtils.DataGenerator;
 import ru.yandex.practicum.filmorate.testUtils.FilmGenerator;
@@ -24,6 +26,12 @@ public class FilmControllerTests {
     @Autowired
     private MockMvc mockMvc;
     private final String urlTemplate = "/films";
+
+    @AfterEach
+    public void startService() {
+        FilmController.setStartId0();
+        FilmController.clearDb();
+    }
 
     @Test
     public void GetAllFilms_executeRequest_ShouldReturn200Code() throws Exception {

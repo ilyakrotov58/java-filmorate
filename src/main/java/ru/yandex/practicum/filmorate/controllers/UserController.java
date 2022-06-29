@@ -18,9 +18,9 @@ import java.util.HashSet;
 @RequestMapping(value = "/users")
 public class UserController {
 
-    private final HashMap<Integer, User> users = new HashMap<>();
-    private final HashSet<String> existingEmails = new HashSet<>();
-    private int nextId = 0;
+    private static final HashMap<Integer, User> users = new HashMap<>();
+    private static final HashSet<String> existingEmails = new HashSet<>();
+    private static int nextId = 0;
 
     @GetMapping
     public ArrayList<User> getAll() {
@@ -30,14 +30,13 @@ public class UserController {
     @PostMapping
     public User createUser(@Valid @RequestBody User user, HttpServletResponse response) throws IOException {
         try {
-                validateId(user);
-                validateUserName(user);
-                validateEmail(user);
-                user.setId(setNextId());
-                users.put(user.getId(), user);
-                existingEmails.add(user.getEmail());
-            }
-        catch (AlreadyExistException ex) {
+            validateId(user);
+            validateUserName(user);
+            validateEmail(user);
+            user.setId(setNextId());
+            users.put(user.getId(), user);
+            existingEmails.add(user.getEmail());
+        } catch (AlreadyExistException ex) {
             response.sendError(400);
             log.error(ex.getMessage());
         }
@@ -79,14 +78,25 @@ public class UserController {
     }
 
     private void validateEmptyEmail(User user) throws ValidationException {
-        if(user.getEmail() == null || user.getEmail().isEmpty()){
+        if (user.getEmail() == null || user.getEmail().isEmpty()) {
             throw new ValidationException("Can't update user with empty email");
         }
     }
 
-    private void validateId(User user){
-        if(!users.containsKey(user.getId()) && user.getId() != 0){
+    private void validateId(User user) {
+        if (!users.containsKey(user.getId()) && user.getId() != 0) {
             throw new AlreadyExistException("User with id " + user.getId() + " already exist");
         }
+    }
+
+    // Temporary methods. Will be deleted after we will have real db in project
+
+    public static void setStartId0() {
+        nextId = 0;
+    }
+
+    public static void clearDb() {
+        users.clear();
+        existingEmails.clear();
     }
 }

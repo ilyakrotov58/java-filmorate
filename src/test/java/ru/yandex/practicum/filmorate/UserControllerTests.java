@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import ru.yandex.practicum.filmorate.controllers.UserController;
 import ru.yandex.practicum.filmorate.testUtils.GsonConverter;
 import ru.yandex.practicum.filmorate.testUtils.UserGenerator;
 
@@ -21,6 +23,12 @@ class UserControllerTests {
     @Autowired
     private MockMvc mockMvc;
     private final String urlTemplate = "/users";
+
+    @AfterEach
+    public void startService() {
+        UserController.setStartId0();
+        UserController.clearDb();
+    }
 
     @Test
     public void GetAllUsers_executeRequest_ShouldReturn200Code() throws Exception {

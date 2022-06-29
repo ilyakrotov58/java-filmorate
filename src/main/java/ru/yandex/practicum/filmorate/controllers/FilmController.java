@@ -18,8 +18,8 @@ import java.util.HashMap;
 @RequestMapping(value = "/films")
 public class FilmController {
 
-    private final HashMap<Integer, Film> films = new HashMap<>();
-    private int nextId = 0;
+    private static final HashMap<Integer, Film> films = new HashMap<>();
+    private static int nextId = 0;
 
     @GetMapping
     public ArrayList<Film> getAll(){
@@ -76,5 +76,15 @@ public class FilmController {
             response.sendError(400);
             log.error(ex.getMessage());
         }
+    }
+
+    // Temporary methods. Will be deleted after we will have real db in project
+
+    public static void setStartId0(){
+        nextId = 0;
+    }
+
+    public static void clearDb(){
+        films.clear();
     }
 }
