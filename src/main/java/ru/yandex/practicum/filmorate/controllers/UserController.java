@@ -62,14 +62,14 @@ public class UserController {
         return ++nextId;
     }
 
-    private void validate(MethodType methodType, User user){
+    private void validate(MethodType methodType, User user) {
 
         // validate UserName
         if (user.getName() == null || user.getName().isEmpty()) {
             user.setName(user.getLogin());
         }
 
-        switch (methodType){
+        switch (methodType) {
             case POST:
                 // validate Id
                 if (!users.containsKey(user.getId()) && user.getId() != 0) {
