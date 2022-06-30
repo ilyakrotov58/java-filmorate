@@ -30,9 +30,7 @@ public class UserController {
     @PostMapping
     public User createUser(@Valid @RequestBody User user, HttpServletResponse response) throws IOException {
         try {
-            validateId(user);
-            validateUserName(user);
-            validateEmail(user);
+            validate(MethodType.POST, user);
             user.setId(setNextId());
             users.put(user.getId(), user);
             existingEmails.add(user.getEmail());
@@ -47,8 +45,7 @@ public class UserController {
     public User updateUser(@Valid @RequestBody User user, HttpServletResponse response) throws IOException {
         try {
             if (users.containsKey(user.getId())) {
-                validateUserName(user);
-                validateEmptyEmail(user);
+                validate(MethodType.PUT, user);
                 users.replace(user.getId(), user);
                 existingEmails.add(user.getEmail());
             } else {
@@ -65,27 +62,33 @@ public class UserController {
         return ++nextId;
     }
 
-    private void validateUserName(User user) {
+    private void validate(MethodType methodType, User user){
+
+        // validate UserName
         if (user.getName() == null || user.getName().isEmpty()) {
             user.setName(user.getLogin());
         }
-    }
 
-    private void validateEmail(User user) throws AlreadyExistException {
-        if (existingEmails.contains(user.getEmail())) {
-            throw new AlreadyExistException("User with email " + user.getEmail() + " is already exist");
-        }
-    }
+        switch (methodType){
+            case POST:
+                // validate Id
+                if (!users.containsKey(user.getId()) && user.getId() != 0) {
+                    throw new AlreadyExistException("User with id " + user.getId() + " already exist");
+                }
 
-    private void validateEmptyEmail(User user) throws ValidationException {
-        if (user.getEmail() == null || user.getEmail().isEmpty()) {
-            throw new ValidationException("Can't update user with empty email");
-        }
-    }
+                // validate email
+                if (existingEmails.contains(user.getEmail())) {
+                    throw new AlreadyExistException("User with email " + user.getEmail() + " is already exist");
+                }
+                break;
 
-    private void validateId(User user) {
-        if (!users.containsKey(user.getId()) && user.getId() != 0) {
-            throw new AlreadyExistException("User with id " + user.getId() + " already exist");
+            case PUT:
+
+                // validate empty email
+                if (user.getEmail() == null || user.getEmail().isEmpty()) {
+                    throw new ValidationException("Can't update user with empty email");
+                }
+                break;
         }
     }
 
