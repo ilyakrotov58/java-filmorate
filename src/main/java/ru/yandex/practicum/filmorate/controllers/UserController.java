@@ -1,105 +1,116 @@
 package ru.yandex.practicum.filmorate.controllers;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exceptions.AlreadyExistException;
+import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.models.User;
+import ru.yandex.practicum.filmorate.services.UserService;
 
-import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 
 @Slf4j
 @RestController
 @RequestMapping(value = "/users")
 public class UserController {
 
-    private static final HashMap<Integer, User> users = new HashMap<>();
-    private static final HashSet<String> existingEmails = new HashSet<>();
-    private static int nextId = 0;
+    @Autowired
+    private UserService userService;
 
     @GetMapping
     public ArrayList<User> getAll() {
-        return new ArrayList<>(users.values());
+        return userService.getAll();
+    }
+
+    @GetMapping("/{id}")
+    public User getUser(@PathVariable int id) {
+        validateIfUserExist(id, true);
+        return userService.getUser(id);
     }
 
     @PostMapping
-    public User createUser(@Valid @RequestBody User user, HttpServletResponse response) throws IOException {
-        try {
-            validate(MethodType.POST, user);
-            user.setId(setNextId());
-            users.put(user.getId(), user);
-            existingEmails.add(user.getEmail());
-        } catch (AlreadyExistException ex) {
-            response.sendError(400);
-            log.error(ex.getMessage());
-        }
-        return user;
+    public User createUser(@Valid @RequestBody User user) {
+        validateIfUserExist(user.getId(), false);
+        validateExistingEmail(user);
+        validateUserName(user);
+        log.info("User " + user.getEmail() + "was added");
+        return userService.add(user);
     }
 
     @PutMapping
-    public User updateUser(@Valid @RequestBody User user, HttpServletResponse response) throws IOException {
-        try {
-            if (users.containsKey(user.getId())) {
-                validate(MethodType.PUT, user);
-                users.replace(user.getId(), user);
-                existingEmails.add(user.getEmail());
-            } else {
-                response.sendError(500);
-            }
-        } catch (ValidationException | javax.validation.ValidationException ex) {
-            log.error(ex.getMessage());
-            response.sendError(400);
+    public User updateUser(@Valid @RequestBody User user) {
+        validateIfUserExist(user.getId(), true);
+        validateEmail(user);
+        validateUserName(user);
+        log.info("User " + user.getEmail() + "was updated");
+        return userService.update(user);
+    }
+
+    @DeleteMapping
+    public void deleteUser(@RequestBody User user) {
+        validateIfUserExist(user.getId(), true);
+        log.info("User with id=" + user.getId() + " has been deleted");
+        userService.deleteUser(user);
+    }
+
+    @PutMapping("/{id}/friends/{friendId}")
+    public void addFriend(@PathVariable int id, @PathVariable int friendId) {
+        validateIfUserExist(id, true);
+        validateIfUserExist(friendId, true);
+        log.info("User with id=" + id + " add friend with id=" + friendId);
+        userService.addFriend(id, friendId);
+    }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void deleteFriend(@PathVariable int id, @PathVariable int friendId) {
+        validateIfUserExist(id, true);
+        validateIfUserExist(friendId, true);
+        log.info("User with id=" + id + " delete friend with id=" + friendId);
+        userService.deleteFriend(id, friendId);
+    }
+
+    @GetMapping("/{id}/friends")
+    public ArrayList<User> getFriends(@PathVariable int id) {
+        return userService.getFriends(id);
+    }
+
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public ArrayList<User> getCommonFriends(@PathVariable int id, @PathVariable int otherId) {
+        validateIfUserExist(id, true);
+        validateIfUserExist(otherId, true);
+        return userService.getCommonFriends(id, otherId);
+    }
+
+    private void validateEmail(User user) {
+        if (user.getEmail() == null || user.getEmail().isEmpty()) {
+            throw new ValidationException("Can't update user with empty email");
         }
-        return user;
     }
 
-    private int setNextId() {
-        return ++nextId;
-    }
-
-    private void validate(MethodType methodType, User user) {
-
-        // validate UserName
+    private void validateUserName(User user) {
         if (user.getName() == null || user.getName().isEmpty()) {
             user.setName(user.getLogin());
         }
+    }
 
-        switch (methodType) {
-            case POST:
-                // validate Id
-                if (!users.containsKey(user.getId()) && user.getId() != 0) {
-                    throw new AlreadyExistException("User with id " + user.getId() + " already exist");
-                }
-
-                // validate email
-                if (existingEmails.contains(user.getEmail())) {
-                    throw new AlreadyExistException("User with email " + user.getEmail() + " is already exist");
-                }
-                break;
-
-            case PUT:
-
-                // validate empty email
-                if (user.getEmail() == null || user.getEmail().isEmpty()) {
-                    throw new ValidationException("Can't update user with empty email");
-                }
-                break;
+    private void validateExistingEmail(User user) {
+        if (userService.getExistingEmails().contains(user.getEmail())) {
+            throw new AlreadyExistException("User with email " + user.getEmail() + " is already exist");
         }
     }
 
-    // Temporary methods. Will be deleted after we will have real db in project
-
-    public static void setStartId0() {
-        nextId = 0;
-    }
-
-    public static void clearDb() {
-        users.clear();
-        existingEmails.clear();
+    private void validateIfUserExist(int userId, boolean ifUserShouldExist) {
+        if (ifUserShouldExist) {
+            if (userService.getUser(userId) == null || userId < 0) {
+                throw new NotFoundException("User with id=" + userId + " is not exist");
+            }
+        } else {
+            if (userService.getUser(userId) != null) {
+                throw new AlreadyExistException("User with id=" + userId + " already exist");
+            }
+        }
     }
 }

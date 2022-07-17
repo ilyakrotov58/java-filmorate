@@ -8,7 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.yandex.practicum.filmorate.controllers.UserController;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.testUtils.GsonConverter;
 import ru.yandex.practicum.filmorate.testUtils.UserGenerator;
 
@@ -26,8 +26,8 @@ class UserControllerTests {
 
     @AfterEach
     public void startService() {
-        UserController.setStartId0();
-        UserController.clearDb();
+        InMemoryUserStorage.setStartId0();
+        InMemoryUserStorage.clearDb();
     }
 
     @Test
@@ -97,7 +97,7 @@ class UserControllerTests {
         // Assert
         var actualStatusCode = result.getResponse().getStatus();
 
-        Assertions.assertEquals(400, actualStatusCode);
+        Assertions.assertEquals(500, actualStatusCode);
     }
 
     @Test
