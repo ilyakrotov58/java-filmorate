@@ -6,13 +6,17 @@ import ru.yandex.practicum.filmorate.models.User;
 import ru.yandex.practicum.filmorate.storage.IUserStorage;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Set;
 
 @Service
 public class UserService {
 
+    private final IUserStorage userStorage;
+
     @Autowired
-    IUserStorage userStorage;
+    public UserService(IUserStorage userStorage) {
+        this.userStorage = userStorage;
+    }
 
     public ArrayList<User> getAll() {
         return userStorage.getAll();
@@ -26,7 +30,7 @@ public class UserService {
         return userStorage.update(user);
     }
 
-    public HashSet<String> getExistingEmails() {
+    public Set<String> getExistingEmails() {
         return userStorage.getExistingEmails();
     }
 

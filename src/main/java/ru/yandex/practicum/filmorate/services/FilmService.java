@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.models.Film;
 import ru.yandex.practicum.filmorate.storage.IFilmStorage;
 
 import java.util.ArrayList;
-import java.util.Optional;
 
 @Service
 public class FilmService {
@@ -38,7 +37,7 @@ public class FilmService {
         filmStorage.deleteLike(filmId, userId);
     }
 
-    public ArrayList<Film> getMostPopularFilms(Optional<Integer> count) {
+    public ArrayList<Film> getMostPopularFilms(int count) {
         return filmStorage.getMostPopularFilms(count);
     }
 

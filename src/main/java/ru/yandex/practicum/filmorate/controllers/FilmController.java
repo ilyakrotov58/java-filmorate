@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.services.UserService;
 
 import javax.validation.Valid;
 import java.util.ArrayList;
-import java.util.Optional;
 
 @Slf4j
 @RestController
@@ -67,7 +66,7 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public ArrayList<Film> getMostPopularFilms(@RequestParam Optional<Integer> count) {
+    public ArrayList<Film> getMostPopularFilms(@RequestParam(defaultValue = "10") int count) {
         return filmService.getMostPopularFilms(count);
     }
 

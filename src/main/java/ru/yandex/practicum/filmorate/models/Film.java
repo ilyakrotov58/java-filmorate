@@ -10,6 +10,7 @@ import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -40,5 +41,5 @@ public class Film {
     @JsonIgnore
     @Getter
     @Setter
-    private HashSet<Integer> userIdLikes = new HashSet<>();
+    private Set<Integer> userIdLikes = new HashSet<>();
 }

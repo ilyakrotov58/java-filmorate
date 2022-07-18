@@ -6,14 +6,14 @@ import ru.yandex.practicum.filmorate.models.Film;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Optional;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
 @Getter
 public class InMemoryFilmStorage implements IFilmStorage {
 
-    private static final HashMap<Integer, Film> films = new HashMap<>();
+    private static final Map<Integer, Film> films = new HashMap<>();
     private static int nextId = 0;
 
     @Override
@@ -52,11 +52,10 @@ public class InMemoryFilmStorage implements IFilmStorage {
     }
 
     @Override
-    public ArrayList<Film> getMostPopularFilms(Optional<Integer> count) {
-        var valueOrDefault = count.orElse(10);
+    public ArrayList<Film> getMostPopularFilms(int count) {
         return films.values().stream()
                 .sorted(this::compare)
-                .limit(valueOrDefault)
+                .limit(count)
                 .collect(Collectors.toCollection(ArrayList::new));
     }
 

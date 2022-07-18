@@ -4,16 +4,14 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.models.User;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 @Component
 public class InMemoryUserStorage implements IUserStorage {
 
-    private static final HashMap<Integer, User> users = new HashMap<>();
+    private static final Map<Integer, User> users = new HashMap<>();
 
-    private static final HashSet<String> existingEmails = new HashSet<>();
+    private static final Set<String> existingEmails = new HashSet<>();
     private static int nextId = 0;
 
     @Override
@@ -99,7 +97,7 @@ public class InMemoryUserStorage implements IUserStorage {
         return ++nextId;
     }
 
-    public HashSet<String> getExistingEmails() {
+    public Set<String> getExistingEmails() {
         return existingEmails;
     }
 

@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -35,5 +36,5 @@ public class User {
     @JsonIgnore
     @Getter
     @Setter
-    private HashSet<Integer> friends = new HashSet<>();
+    private Set<Integer> friends = new HashSet<>();
 }

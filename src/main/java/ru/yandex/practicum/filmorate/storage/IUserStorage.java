@@ -3,7 +3,7 @@ package ru.yandex.practicum.filmorate.storage;
 import ru.yandex.practicum.filmorate.models.User;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Set;
 
 public interface IUserStorage {
 
@@ -13,7 +13,7 @@ public interface IUserStorage {
 
     User update(User user);
 
-    HashSet<String> getExistingEmails();
+    Set<String> getExistingEmails();
 
     User getUser(int userId);
 
