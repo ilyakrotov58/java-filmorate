@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.models;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
 import org.springframework.lang.Nullable;
 
 import javax.validation.constraints.Email;
@@ -9,9 +9,12 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Past;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class User {
 
     private int id;
@@ -29,4 +32,9 @@ public class User {
 
     @Past
     private LocalDate birthday;
+
+    @JsonIgnore
+    @Getter
+    @Setter
+    private Set<Integer> friends = new HashSet<>();
 }

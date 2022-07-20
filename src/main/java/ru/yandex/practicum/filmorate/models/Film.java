@@ -1,7 +1,7 @@
 package ru.yandex.practicum.filmorate.models;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.*;
 import ru.yandex.practicum.filmorate.validators.filmMinDateValidator.FilmMinDateValidator;
 
 import javax.validation.constraints.NotEmpty;
@@ -9,9 +9,12 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
 public class Film {
 
     private static final String minFilmDate = "1895-12-28";
@@ -34,4 +37,9 @@ public class Film {
     public static String getMinFilmDate() {
         return minFilmDate;
     }
+
+    @JsonIgnore
+    @Getter
+    @Setter
+    private Set<Integer> userIdLikes = new HashSet<>();
 }

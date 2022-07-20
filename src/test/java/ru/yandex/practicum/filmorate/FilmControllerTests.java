@@ -8,8 +8,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
-import ru.yandex.practicum.filmorate.controllers.FilmController;
 import ru.yandex.practicum.filmorate.models.Film;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.testUtils.DataGenerator;
 import ru.yandex.practicum.filmorate.testUtils.FilmGenerator;
 import ru.yandex.practicum.filmorate.testUtils.GsonConverter;
@@ -29,8 +29,8 @@ public class FilmControllerTests {
 
     @AfterEach
     public void startService() {
-        FilmController.setStartId0();
-        FilmController.clearDb();
+        InMemoryFilmStorage.setStartId0();
+        InMemoryFilmStorage.clearDb();
     }
 
     @Test
@@ -101,7 +101,7 @@ public class FilmControllerTests {
         // Assert
         var actualStatusCode = result.getResponse().getStatus();
 
-        Assertions.assertEquals(400, actualStatusCode);
+        Assertions.assertEquals(500, actualStatusCode);
     }
 
     @Test

@@ -11,6 +11,7 @@ public class FilmGenerator {
                 "filmName_" + id,
                 "FilmDesc_" + id,
                 LocalDate.of(2000, 1, 1),
-                160);
+                160,
+                null);
     }
 }

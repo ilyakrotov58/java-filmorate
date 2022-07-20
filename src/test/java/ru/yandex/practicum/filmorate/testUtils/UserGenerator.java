@@ -11,6 +11,7 @@ public class UserGenerator {
                 "test@testEmail.com",
                 "UserLogin_" + id,
                 "UserName_" + id,
-                LocalDate.of(2000, 1, 1));
+                LocalDate.of(2000, 1, 1),
+                null);
     }
 }
