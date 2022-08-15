@@ -1,12 +1,3 @@
-create table IF NOT EXISTS FILM_GENRE
-(
-    FILM_ID  INTEGER not null,
-    GENRE_ID INTEGER
-);
-
-create unique index IF NOT EXISTS FILM_GENRE_FILM_ID_GENRE_ID_UINDEX
-    on FILM_GENRE (FILM_ID, GENRE_ID);
-
 create table IF NOT EXISTS FILM_RATINGS
 (
     ID     INTEGER auto_increment,
@@ -42,6 +33,17 @@ create unique index IF NOT EXISTS FILMS_FILM_ID_UINDEX
 alter table FILMS
     add constraint IF NOT EXISTS FILMS_PK
         primary key (FILM_ID);
+
+create table IF NOT EXISTS FILM_GENRE
+(
+    FILM_ID  INTEGER not null,
+    GENRE_ID INTEGER,
+    constraint FILM_GENRE_FILMS_FILM_ID_FK
+        foreign key (FILM_ID) references FILMS
+);
+
+create unique index IF NOT EXISTS FILM_GENRE_FILM_ID_GENRE_ID_UINDEX
+    on FILM_GENRE (FILM_ID, GENRE_ID);
 
 create table IF NOT EXISTS GENRES
 (
