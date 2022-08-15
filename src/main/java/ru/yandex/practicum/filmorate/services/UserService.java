@@ -1,12 +1,13 @@
 package ru.yandex.practicum.filmorate.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.models.User;
 import ru.yandex.practicum.filmorate.storage.IUserStorage;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Set;
 
 @Service
 public class UserService {
@@ -14,11 +15,11 @@ public class UserService {
     private final IUserStorage userStorage;
 
     @Autowired
-    public UserService(IUserStorage userStorage) {
+    public UserService(@Qualifier("UserDbStorage") IUserStorage userStorage) {
         this.userStorage = userStorage;
     }
 
-    public ArrayList<User> getAll() {
+    public ArrayList<User> getAll() throws SQLException {
         return userStorage.getAll();
     }
 
@@ -30,33 +31,27 @@ public class UserService {
         return userStorage.update(user);
     }
 
-    public Set<String> getExistingEmails() {
-        return userStorage.getExistingEmails();
-    }
-
-    public User getUser(int userId) {
-        return userStorage.getUser(userId);
+    public User getUser(int userId) throws SQLException {
+        return userStorage.getUserById(userId);
     }
 
     public void addFriend(int userId, int friendId) {
         userStorage.addFriend(userId, friendId);
-        userStorage.addFriend(friendId, userId);
     }
 
     public void deleteFriend(int userId, int friendId) {
         userStorage.deleteFriend(userId, friendId);
-        userStorage.deleteFriend(friendId, userId);
     }
 
     public void deleteUser(User user) {
         userStorage.deleteUser(user);
     }
 
-    public ArrayList<User> getFriends(int userId) {
+    public ArrayList<User> getFriends(int userId) throws SQLException {
         return userStorage.getFriends(userId);
     }
 
-    public ArrayList<User> getCommonFriends(int userId, int userIdToCompare) {
+    public ArrayList<User> getCommonFriends(int userId, int userIdToCompare) throws SQLException {
         return userStorage.getCommonFriends(userId, userIdToCompare);
     }
 }

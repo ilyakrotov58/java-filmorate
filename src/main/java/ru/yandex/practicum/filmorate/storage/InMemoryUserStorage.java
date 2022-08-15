@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exceptions.ValidationException;
 import ru.yandex.practicum.filmorate.models.User;
@@ -7,11 +8,11 @@ import ru.yandex.practicum.filmorate.models.User;
 import java.util.*;
 
 @Component
+@Qualifier("InMemoryUserStorage")
+@Deprecated
 public class InMemoryUserStorage implements IUserStorage {
 
     private static final Map<Integer, User> users = new HashMap<>();
-
-    private static final Set<String> existingEmails = new HashSet<>();
     private static int nextId = 0;
 
     @Override
@@ -23,7 +24,6 @@ public class InMemoryUserStorage implements IUserStorage {
     public User add(User user) {
         user.setId(setNextId());
         users.put(user.getId(), user);
-        existingEmails.add(user.getEmail());
         return user;
     }
 
@@ -34,13 +34,12 @@ public class InMemoryUserStorage implements IUserStorage {
         }
         if (users.containsKey(user.getId())) {
             users.replace(user.getId(), user);
-            existingEmails.add(user.getEmail());
         }
         return user;
     }
 
     @Override
-    public User getUser(int userId) {
+    public User getUserById(int userId) {
         return users.get(userId);
     }
 
@@ -52,7 +51,16 @@ public class InMemoryUserStorage implements IUserStorage {
     @Override
     public void addFriend(int userId, int friendId) {
         var user = users.get(userId);
-        user.getFriends().add(friendId);
+        var friend = users.get(friendId);
+
+        if(friend.getFriends().get(userId) == null){
+                user.getFriends().put(friendId, false);
+                friend.getFriends().put(userId, false);
+        }
+        else if(!friend.getFriends().get(userId)){
+            user.getFriends().replace(friendId, true);
+            friend.getFriends().replace(userId, true);
+        }
     }
 
     @Override
@@ -64,7 +72,7 @@ public class InMemoryUserStorage implements IUserStorage {
     @Override
     public ArrayList<User> getFriends(int userId) {
         var user = users.get(userId);
-        var listOfFriendsIds = user.getFriends();
+        var listOfFriendsIds = user.getFriendsIds(true);
         var result = new ArrayList<User>();
 
         for (Integer friendId : listOfFriendsIds) {
@@ -74,31 +82,27 @@ public class InMemoryUserStorage implements IUserStorage {
     }
 
     @Override
-    public ArrayList<User> getCommonFriends(int userId, int userIdToCompare) {
+    public ArrayList<User> getCommonFriends(int userId, int friendId) {
         var user = users.get(userId);
-        var secondUser = users.get(userIdToCompare);
+        var friend = users.get(friendId);
         var listOfCommonFriendsIds = new HashSet<Integer>();
-        for (Integer friendId : user.getFriends()) {
-            for (Integer friendIdSecondUser : secondUser.getFriends()) {
-                if (friendId.equals(friendIdSecondUser)) {
+        for (Integer confirmedFriendId : user.getFriendsIds(true)) {
+            for (Integer friendIdSecondUser : friend.getFriendsIds(true)) {
+                if (confirmedFriendId.equals(friendIdSecondUser)) {
                     listOfCommonFriendsIds.add(friendId);
                 }
             }
         }
         var result = new ArrayList<User>();
 
-        for (Integer friendId : listOfCommonFriendsIds) {
-            result.add(users.get(friendId));
+        for (Integer id : listOfCommonFriendsIds) {
+            result.add(users.get(id));
         }
         return result;
     }
 
     private int setNextId() {
         return ++nextId;
-    }
-
-    public Set<String> getExistingEmails() {
-        return existingEmails;
     }
 
     // Temporary methods. Will be deleted after we will have real db in project
@@ -109,6 +113,5 @@ public class InMemoryUserStorage implements IUserStorage {
 
     public static void clearDb() {
         users.clear();
-        existingEmails.clear();
     }
 }

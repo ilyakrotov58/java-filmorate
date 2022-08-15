@@ -1,8 +1,11 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import lombok.Getter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.models.Film;
+import ru.yandex.practicum.filmorate.models.filmAddModels.Genre;
+import ru.yandex.practicum.filmorate.models.filmAddModels.Mpa;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,6 +14,8 @@ import java.util.stream.Collectors;
 
 @Component
 @Getter
+@Qualifier("InMemoryFilmStorage")
+@Deprecated
 public class InMemoryFilmStorage implements IFilmStorage {
 
     private static final Map<Integer, Film> films = new HashMap<>();
@@ -37,6 +42,26 @@ public class InMemoryFilmStorage implements IFilmStorage {
     @Override
     public Film getFilmById(int filmId) {
         return films.get(filmId);
+    }
+
+    @Override
+    public ArrayList<Genre> getAllGenres() {
+        return null;
+    }
+
+    @Override
+    public Genre getGenreById(int id) {
+        return null;
+    }
+
+    @Override
+    public ArrayList<Mpa> getAllRatings() {
+        return null;
+    }
+
+    @Override
+    public Mpa getRatingById(int id) {
+        return null;
     }
 
     @Override
