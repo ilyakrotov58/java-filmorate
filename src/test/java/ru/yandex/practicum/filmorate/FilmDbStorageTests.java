@@ -103,7 +103,7 @@ public class FilmDbStorageTests {
         userDbStorage.add(user);
 
         // Act
-        filmDbStorage.addLike(user.getId(), film.getId());
+        filmDbStorage.addLike(film.getId(), user.getId());
 
         // Assert
         String query = "SELECT * FROM FILM_LIKES WHERE FILM_ID = ?";
@@ -128,7 +128,7 @@ public class FilmDbStorageTests {
         jdbcTemplate.update(insertQuery, user.getId(), film.getId());
 
         // Act
-        filmDbStorage.deleteLike(user.getId(), film.getId());
+        filmDbStorage.deleteLike(film.getId(), user.getId());
 
         // Assert
         String query = "SELECT * FROM FILM_LIKES WHERE FILM_ID = ? AND USER_ID = ?";
