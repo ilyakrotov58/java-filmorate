@@ -12,7 +12,6 @@ import ru.yandex.practicum.filmorate.models.User;
 import ru.yandex.practicum.filmorate.storage.UserDbStorage;
 import ru.yandex.practicum.filmorate.testUtils.UserGenerator;
 
-import javax.validation.valueextraction.Unwrapping;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -36,7 +35,7 @@ public class UserDbStorageTests {
 
         String query = "SELECT * FROM USERS";
         var rs = jdbcTemplate.queryForRowSet(query);
-        while (rs.next()){
+        while (rs.next()) {
             expectedList.add(makeUser(rs));
         }
 
@@ -110,7 +109,7 @@ public class UserDbStorageTests {
         String sqlQuery = "SELECT * FROM FRIENDSHIPS WHERE USER_ID = ?";
         var rs = jdbcTemplate.queryForRowSet(sqlQuery, user.getId());
 
-        while (rs.next()){
+        while (rs.next()) {
             Assertions.assertEquals(
                     user.getId(),
                     rs.getInt("USER_ID"));
@@ -149,7 +148,7 @@ public class UserDbStorageTests {
     }
 
     @Test
-    public void getUserFriends(){
+    public void getUserFriends() {
         // Arrange
         var expectedFriends = new ArrayList<User>();
         var friend = UserGenerator.createUserWithNextId(userDbStorage.getJdbcTemplate());

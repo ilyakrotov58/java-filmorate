@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.storage;
 
 
 import lombok.Getter;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
@@ -15,7 +14,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 @Component
-@Qualifier("UserDbStorage")
 public class UserDbStorage implements IUserStorage {
 
     @Getter

@@ -1,12 +1,10 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import lombok.Getter;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.exceptions.NotFoundException;
 import ru.yandex.practicum.filmorate.models.Film;
 import ru.yandex.practicum.filmorate.models.filmAddModels.Genre;
 import ru.yandex.practicum.filmorate.models.filmAddModels.Mpa;
@@ -17,7 +15,6 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Component
-@Qualifier("filmDbStorage")
 public class FilmDbStorage implements IFilmStorage {
 
     @Getter
@@ -30,7 +27,8 @@ public class FilmDbStorage implements IFilmStorage {
     @Override
     public ArrayList<Film> getAll() {
         var films = new ArrayList<Film>();
-        String allFilmsQuery = "SELECT * FROM FILMS";
+        String allFilmsQuery = "SELECT * FROM FILMS AS F " +
+                "INNER JOIN FILM_RATINGS AS FR ON F.RATING_ID = FR.ID";
         var rs = jdbcTemplate.queryForRowSet(allFilmsQuery);
         while (rs.next()) {
             films.add(makeFilm(rs));
@@ -82,7 +80,9 @@ public class FilmDbStorage implements IFilmStorage {
             }
         }
 
-        String returnedFilmQuery = "SELECT * FROM FILMS WHERE FILM_ID = ?";
+        String returnedFilmQuery = "SELECT * FROM FILMS AS F " +
+                "INNER JOIN FILM_RATINGS AS FR ON F.RATING_ID = FR.ID " +
+                "WHERE FILM_ID = ?";
         var rs = jdbcTemplate.queryForRowSet(returnedFilmQuery, film.getId());
 
         Film returnedFilm = null;
@@ -115,9 +115,11 @@ public class FilmDbStorage implements IFilmStorage {
                         "RELEASE_DATE,  " +
                         "FILM_DURATION, " +
                         "RATING_ID, " +
+                        "RATING, " +
                         "COUNT(fl.USER_ID) as cnt " +
                         "FROM FILM_LIKES as fl" +
                         " INNER JOIN FILMS as f ON f.FILM_ID = fl.FILM_ID" +
+                        " INNER JOIN FILM_RATINGS AS FR ON F.RATING_ID = FR.ID" +
                         " GROUP BY fl.FILM_ID" +
                         " ORDER BY cnt DESC LIMIT ?";
 
@@ -129,7 +131,10 @@ public class FilmDbStorage implements IFilmStorage {
 
         var otherFilms = new ArrayList<Film>();
         if(films.size() < count){
-            String query = "SELECT * FROM FILMS LIMIT ?";
+            String query =
+                    "SELECT * FROM FILMS AS F " +
+                    "INNER JOIN FILM_RATINGS AS FR ON F.RATING_ID = FR.ID " +
+                    "LIMIT ?";
             var rsForAll = jdbcTemplate.queryForRowSet(query, count - films.size());
 
             while (rsForAll.next()){
@@ -144,7 +149,9 @@ public class FilmDbStorage implements IFilmStorage {
 
     @Override
     public Film getFilmById(int filmId) {
-        String sqlQuery = "SELECT * FROM FILMS WHERE FILM_ID = ?";
+        String sqlQuery = "SELECT * FROM FILMS AS F " +
+                          "INNER JOIN FILM_RATINGS AS FR ON F.RATING_ID = FR.ID " +
+                          "WHERE FILM_ID = ? ";
 
         var filmRs = jdbcTemplate.queryForRowSet(sqlQuery, filmId);
 
@@ -155,74 +162,6 @@ public class FilmDbStorage implements IFilmStorage {
         }
 
         return film;
-    }
-
-    @Override
-    public ArrayList<Genre> getAllGenres() {
-        var genres = new ArrayList<Genre>();
-        String sqlQuery = "SELECT * FROM GENRES ORDER BY ID";
-        var rs = jdbcTemplate.queryForRowSet(sqlQuery);
-
-        while (rs.next()) {
-            var genre = new Genre(
-                    rs.getInt("ID"),
-                    rs.getString("GENRE"));
-            genres.add(genre);
-        }
-
-        return genres;
-    }
-
-    @Override
-    public Genre getGenreById(int id) {
-        Genre genre;
-
-        String sqlQuery = "SELECT * FROM GENRES WHERE ID = ?";
-        var rs = jdbcTemplate.queryForRowSet(sqlQuery, id);
-
-        if (rs.next()) {
-            genre = new Genre(
-                    rs.getInt("ID"),
-                    rs.getString("GENRE"));
-        } else {
-            throw new NotFoundException("Genre with id =" + id + "can't be found");
-        }
-
-        return genre;
-    }
-
-    @Override
-    public ArrayList<Mpa> getAllRatings() {
-        var ratings = new ArrayList<Mpa>();
-        String sqlQuery = "SELECT * FROM FILM_RATINGS ORDER BY ID";
-        var rs = jdbcTemplate.queryForRowSet(sqlQuery);
-
-        while (rs.next()) {
-            var rating = new Mpa(
-                    rs.getInt("ID"),
-                    rs.getString("RATING"));
-            ratings.add(rating);
-        }
-
-        return ratings;
-    }
-
-    @Override
-    public Mpa getRatingById(int id) {
-        Mpa mpa;
-
-        String sqlQuery = "SELECT * FROM FILM_RATINGS WHERE ID = ?";
-        var rs = jdbcTemplate.queryForRowSet(sqlQuery, id);
-
-        if (rs.next()) {
-            mpa = new Mpa(
-                    rs.getInt("ID"),
-                    rs.getString("RATING"));
-        } else {
-            throw new NotFoundException("Mpa with id =" + id + "can't be found");
-        }
-
-        return mpa;
     }
 
     private Film makeFilm(SqlRowSet rs) {
@@ -236,18 +175,23 @@ public class FilmDbStorage implements IFilmStorage {
                     releaseDate != null ? releaseDate.toLocalDate() : null,
                     rs.getInt("FILM_DURATION"),
                     getFilmGenres(filmId),
-                    Mpa.getById(rs.getInt("RATING_ID")),
+                    new Mpa(rs.getInt("RATING_ID"),
+                            rs.getString("RATING")),
                     getUserIdLikes(filmId));
     }
 
     private LinkedHashSet<Genre> getFilmGenres(int filmId) {
 
         var genres = new LinkedHashSet<Genre>();
-        String genresQuery = "SELECT GENRE_ID FROM FILM_GENRE WHERE FILM_ID = ?";
+        String genresQuery = "SELECT GENRE_ID, GENRE FROM FILM_GENRE AS FG " +
+                "INNER JOIN GENRES AS G ON FG.GENRE_ID = G.ID " +
+                "WHERE FILM_ID = ? ";
         var rsGenres = jdbcTemplate.queryForRowSet(genresQuery, filmId);
 
         while (rsGenres.next()) {
-            genres.add(Genre.getById(rsGenres.getInt("GENRE_ID")));
+            genres.add(new Genre(
+                    rsGenres.getInt("GENRE_ID"),
+                    rsGenres.getString("GENRE")));
         }
 
         return genres;

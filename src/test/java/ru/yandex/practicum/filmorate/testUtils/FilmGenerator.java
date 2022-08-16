@@ -14,7 +14,7 @@ public class FilmGenerator {
     public static Film createFilm(int id){
 
         var listMpa = new LinkedHashSet<Genre>();
-        listMpa.add(Genre.Action);
+        listMpa.add(new Genre(6, "Боевик"));
 
         return new Film(
                 id,
@@ -23,14 +23,14 @@ public class FilmGenerator {
                 LocalDate.of(2000, 1, 1),
                 160,
                 listMpa,
-                Mpa.G,
+                new Mpa(1, "G"),
                 new HashSet<>());
     }
 
     public static Film createFilmWithNextId(JdbcTemplate jdbcTemplate){
 
         var listMpa = new LinkedHashSet<Genre>();
-        listMpa.add(Genre.Action);
+        listMpa.add(new Genre(6, "Боевик"));
 
         String sqlQuery = "SELECT FILM_ID FROM FILMS ORDER BY FILM_ID DESC LIMIT 1";
         var rs = jdbcTemplate.queryForRowSet(sqlQuery);
@@ -47,7 +47,7 @@ public class FilmGenerator {
                 LocalDate.of(2000, 1, 1),
                 160,
                 listMpa,
-                Mpa.G,
+                new Mpa(1, "G"),
                 new HashSet<>());
     }
 }

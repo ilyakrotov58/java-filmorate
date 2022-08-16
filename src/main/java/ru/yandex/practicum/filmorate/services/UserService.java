@@ -15,7 +15,7 @@ public class UserService {
     private final IUserStorage userStorage;
 
     @Autowired
-    public UserService(@Qualifier("UserDbStorage") IUserStorage userStorage) {
+    public UserService(IUserStorage userStorage) {
         this.userStorage = userStorage;
     }
 

@@ -29,7 +29,6 @@ public class FilmDbStorageTests {
 
     private final FilmDbStorage filmDbStorage;
     private final UserDbStorage userDbStorage;
-
     private final JdbcTemplate jdbcTemplate;
 
     @Test
@@ -55,9 +54,10 @@ public class FilmDbStorageTests {
         var film = FilmGenerator.createFilmWithNextId(filmDbStorage.getJdbcTemplate());
         filmDbStorage.add(film);
 
-        String query = "SELECT * FROM FILMS";
+        String query = "SELECT * FROM FILMS " +
+                "INNER JOIN FILM_RATINGS FR on FILMS.RATING_ID = FR.ID";
         var rs = jdbcTemplate.queryForRowSet(query);
-        while (rs.next()){
+        while (rs.next()) {
             expectedList.add(makeFilm(rs));
         }
 
@@ -76,15 +76,15 @@ public class FilmDbStorageTests {
         filmDbStorage.add(expectedFilm);
 
         LinkedHashSet<Genre> genres = new LinkedHashSet<>();
-        genres.add(Genre.Thriller);
-        genres.add(Genre.Cartoon);
+        genres.add(new Genre(2, "Драма"));
+        genres.add(new Genre(3, "Мультфильм"));
 
         expectedFilm.setName("newName");
         expectedFilm.setDescription("newDesc");
         expectedFilm.setReleaseDate(LocalDate.of(2000, 1, 1));
         expectedFilm.setDuration(100);
         expectedFilm.setGenres(genres);
-        expectedFilm.setMpa(Mpa.PG13);
+        expectedFilm.setMpa(new Mpa(4, "R"));
 
         // Act
         var actualFilm = filmDbStorage.update(expectedFilm);
@@ -94,7 +94,7 @@ public class FilmDbStorageTests {
     }
 
     @Test
-    public void testAddLike(){
+    public void testAddLike() {
         // Arrange
         var film = FilmGenerator.createFilmWithNextId(filmDbStorage.getJdbcTemplate());
         var user = UserGenerator.createUserWithNextId(userDbStorage.getJdbcTemplate());
@@ -109,14 +109,14 @@ public class FilmDbStorageTests {
         String query = "SELECT * FROM FILM_LIKES WHERE FILM_ID = ?";
         var rs = jdbcTemplate.queryForRowSet(query, film.getId());
 
-        while (rs.next()){
+        while (rs.next()) {
             Assertions.assertEquals(film.getId(), rs.getInt("FILM_ID"));
             Assertions.assertEquals(user.getId(), rs.getInt("USER_ID"));
         }
     }
 
     @Test
-    public void testDeleteLike(){
+    public void testDeleteLike() {
         // Arrange
         var film = FilmGenerator.createFilmWithNextId(filmDbStorage.getJdbcTemplate());
         var user = UserGenerator.createUserWithNextId(userDbStorage.getJdbcTemplate());
@@ -138,7 +138,7 @@ public class FilmDbStorageTests {
     }
 
     @Test
-    public void testGetMostPopularFilms(){
+    public void testGetMostPopularFilms() {
         // Arrange
         var expectedFilm = FilmGenerator.createFilmWithNextId(filmDbStorage.getJdbcTemplate());
         var film2 = FilmGenerator.createFilmWithNextId(filmDbStorage.getJdbcTemplate());
@@ -167,54 +167,6 @@ public class FilmDbStorageTests {
         Assertions.assertEquals(expectedFilm, actualFilms.get(0));
     }
 
-    @Test
-    public void getAllGenres(){
-        // Arrange
-        var expectedGenres = Genre.getAll();
-
-        // Act
-        var actualGenres = filmDbStorage.getAllGenres();
-
-        // Assert
-        Assertions.assertEquals(expectedGenres, actualGenres);
-    }
-
-    @Test
-    public void getGenreById(){
-        // Arrange
-        var expectedGenre = Genre.Action;
-
-        // Act
-        var actualGenre = filmDbStorage.getGenreById(Genre.Action.getId());
-
-        // Assert
-        Assertions.assertEquals(expectedGenre, actualGenre);
-    }
-
-    @Test
-    public void getAllRatings(){
-        // Arrange
-        var expectedRatings = Mpa.getAll();
-
-        // Act
-        var actualRatings = filmDbStorage.getAllRatings();
-
-        // Assert
-        Assertions.assertEquals(expectedRatings, actualRatings);
-    }
-
-    @Test
-    public void getRatingById(){
-        // Arrange
-        var expectedRating = Mpa.R;
-
-        // Act
-        var actualRating = filmDbStorage.getRatingById(Mpa.R.getId());
-
-        // Assert
-        Assertions.assertEquals(expectedRating, actualRating);
-    }
-
     private Film makeFilm(SqlRowSet rs) {
         var releaseDate = rs.getDate("RELEASE_DATE");
         var filmId = rs.getInt("FILM_ID");
@@ -226,18 +178,23 @@ public class FilmDbStorageTests {
                 releaseDate != null ? releaseDate.toLocalDate() : null,
                 rs.getInt("FILM_DURATION"),
                 getFilmGenres(filmId),
-                Mpa.getById(rs.getInt("RATING_ID")),
+                new Mpa(rs.getInt("RATING_ID"),
+                        rs.getString("RATING")),
                 getUserIdLikes(filmId));
     }
 
     private LinkedHashSet<Genre> getFilmGenres(int filmId) {
 
         var genres = new LinkedHashSet<Genre>();
-        String genresQuery = "SELECT GENRE_ID FROM FILM_GENRE WHERE FILM_ID = ?";
+        String genresQuery = "SELECT GENRE_ID, GENRE FROM FILM_GENRE AS FG " +
+                "INNER JOIN GENRES AS G ON FG.GENRE_ID = G.ID " +
+                "WHERE FILM_ID = ?";
         var rsGenres = jdbcTemplate.queryForRowSet(genresQuery, filmId);
 
         while (rsGenres.next()) {
-            genres.add(Genre.getById(rsGenres.getInt("GENRE_ID")));
+            genres.add(new Genre(
+                    rsGenres.getInt("GENRE_ID"),
+                    rsGenres.getString("GENRE")));
         }
 
         return genres;

@@ -1,12 +1,13 @@
 package ru.yandex.practicum.filmorate.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.models.Film;
 import ru.yandex.practicum.filmorate.models.filmAddModels.Genre;
 import ru.yandex.practicum.filmorate.models.filmAddModels.Mpa;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.IFilmStorage;
+import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
 import java.util.ArrayList;
 
@@ -14,10 +15,14 @@ import java.util.ArrayList;
 public class FilmService {
 
     private final IFilmStorage filmStorage;
+    private final MpaStorage mpaStorage;
+    private final GenreStorage genreStorage;
 
     @Autowired
-    public FilmService(@Qualifier("filmDbStorage") IFilmStorage filmStorage){
+    public FilmService(IFilmStorage filmStorage, MpaStorage mpaStorage, GenreStorage genreStorage){
         this.filmStorage = filmStorage;
+        this.mpaStorage = mpaStorage;
+        this.genreStorage = genreStorage;
     }
 
     public ArrayList<Film> getAll(){
@@ -37,19 +42,19 @@ public class FilmService {
     }
 
     public ArrayList<Genre> getAllGenres(){
-        return filmStorage.getAllGenres();
+        return genreStorage.getAllGenres();
     }
 
     public Genre getGenreById(int id){
-        return filmStorage.getGenreById(id);
+        return genreStorage.getGenreById(id);
     }
 
     public ArrayList<Mpa> getAllRatings() {
-        return filmStorage.getAllRatings();
+        return mpaStorage.getAllRatings();
     }
 
     public Mpa getRatingById(int id) {
-        return filmStorage.getRatingById(id);
+        return mpaStorage.getRatingById(id);
     }
 
     public void deleteLike(int filmId, int userId){
