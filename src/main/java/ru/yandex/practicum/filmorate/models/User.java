@@ -1,20 +1,17 @@
 package ru.yandex.practicum.filmorate.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
 import org.springframework.lang.Nullable;
 
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Past;
+import javax.validation.constraints.*;
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Data
 @AllArgsConstructor
-@NoArgsConstructor
 public class User {
 
     private int id;
@@ -31,10 +28,38 @@ public class User {
     private String name;
 
     @Past
+    @Nullable
     private LocalDate birthday;
 
     @JsonIgnore
     @Getter
-    @Setter
-    private Set<Integer> friends = new HashSet<>();
+    private HashMap<Integer, Boolean> friends;
+
+    public List<Integer> getFriendsIds(boolean isConfirmFriends){
+        var result =  new ArrayList<Integer>();
+
+        for(Integer friendId : friends.keySet()){
+            if(isConfirmFriends) {
+                if(friends.get(friendId)){
+                    result.add(friendId);
+                }
+            } else {
+                if(!friends.get(friendId)){
+                    result.add(friendId);
+                }
+            }
+        }
+
+        return result;
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> values = new HashMap<>();
+        values.put("USER_ID", this.id);
+        values.put("EMAIL", this.email);
+        values.put("LOGIN", this.login);
+        values.put("USER_NAME", this.name);
+        values.put("BIRTHDAY", this.birthday);
+        return values;
+    }
 }

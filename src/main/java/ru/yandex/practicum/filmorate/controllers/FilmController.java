@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.services.FilmService;
 import ru.yandex.practicum.filmorate.services.UserService;
 
 import javax.validation.Valid;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 @Slf4j
@@ -36,7 +37,6 @@ public class FilmController {
 
     @PostMapping
     public Film createFilm(@Valid @RequestBody Film film) {
-        validateName(film);
         validateIfFilmExist(film.getId(), false);
         log.info("Film " + film.getName() + " with id=" + film.getId() + " was added");
         return filmService.add(film);
@@ -50,18 +50,18 @@ public class FilmController {
     }
 
     @PutMapping("/{id}/like/{userId}")
-    public void addLike(@PathVariable int id, @PathVariable int userId) {
+    public void addLike(@PathVariable int id, @PathVariable int userId) throws SQLException {
         validateIfFilmExist(id, true);
         validateIfUserExist(userId);
-        log.info("User with id=" + id + " set like to user with id=" + userId);
+        log.info("User with id=" + userId + " set like to film with id=" + id);
         filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    public void deleteLike(@PathVariable int id, @PathVariable int userId) {
+    public void deleteLike(@PathVariable int id, @PathVariable int userId) throws SQLException {
         validateIfFilmExist(id, true);
         validateIfUserExist(userId);
-        log.info("User with id=" + id + " delete like to user with id=" + userId);
+        log.info("User with id=" + userId + " delete like from film with id=" + id);
         filmService.deleteLike(id, userId);
     }
 
@@ -70,7 +70,7 @@ public class FilmController {
         return filmService.getMostPopularFilms(count);
     }
 
-    private void validateIfUserExist(int userId) {
+    private void validateIfUserExist(int userId) throws SQLException {
         if (userService.getUser(userId) == null) {
             throw new NotFoundException("User with id=" + userId + " is not exist");
         }
@@ -83,14 +83,6 @@ public class FilmController {
             }
         } else if (filmId != 0 && filmService.getFilmById(filmId) != null) {
             throw new AlreadyExistException("Film with id=" + filmId + " already exist");
-        }
-    }
-
-    private void validateName(Film film) throws AlreadyExistException {
-        for (Film existingFilm : filmService.getAll()) {
-            if (film.getName().equalsIgnoreCase(existingFilm.getName())) {
-                throw new AlreadyExistException("Film with name " + film.getName() + " already exist");
-            }
         }
     }
 }

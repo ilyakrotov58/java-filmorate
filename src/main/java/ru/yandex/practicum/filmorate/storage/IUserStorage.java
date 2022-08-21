@@ -2,20 +2,18 @@ package ru.yandex.practicum.filmorate.storage;
 
 import ru.yandex.practicum.filmorate.models.User;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Set;
 
 public interface IUserStorage {
 
-    ArrayList<User> getAll();
+    ArrayList<User> getAll() throws SQLException;
 
     User add(User user);
 
     User update(User user);
 
-    Set<String> getExistingEmails();
-
-    User getUser(int userId);
+    User getUserById(int userId) throws SQLException;
 
     void addFriend(int userId, int friendId);
 
@@ -23,7 +21,7 @@ public interface IUserStorage {
 
     void deleteUser(User user);
 
-    ArrayList<User> getFriends(int userId);
+    ArrayList<User> getFriends(int userId) throws SQLException;
 
-    ArrayList<User> getCommonFriends(int userId, int userIdToCompare);
+    ArrayList<User> getCommonFriends(int userId, int userIdToCompare) throws SQLException;
 }
