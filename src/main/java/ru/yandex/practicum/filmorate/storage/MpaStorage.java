@@ -9,7 +9,7 @@ import ru.yandex.practicum.filmorate.models.filmAddModels.Mpa;
 import java.util.ArrayList;
 
 @Component
-public class MpaStorage {
+public class MpaStorage implements IMpaStorage {
 
     private final JdbcTemplate jdbcTemplate;
 
